@@ -54,8 +54,10 @@ async function getJson(url: string): Promise<unknown> {
   throw lastError ?? new Error('请求失败')
 }
 
+const ASHARE_CLASSIFY = new Set(['AStock', 'NEEQ', '23'])
+
 function marketFromQuoteId(secid: string, typeName?: string): MarketName {
-  if (typeName?.includes('沪')) return '沪A'
+  if (typeName?.includes('沪') || typeName?.includes('科创')) return '沪A'
   if (typeName?.includes('深') || typeName?.includes('创业')) return '深A'
   if (typeName?.includes('京') || typeName?.includes('北')) return '京A'
   if (secid.startsWith('1.')) return '沪A'
@@ -88,7 +90,7 @@ export async function searchStocks(keyword: string): Promise<StockIdentity[]> {
       QuotationCodeTable?: { Data?: SuggestRow[] }
     }
     const rows = json.QuotationCodeTable?.Data ?? []
-        const seen = new Set<string>()
+    const seen = new Set<string>()
     const result: StockIdentity[] = []
     for (const row of rows) {
       const code = String(row.Code ?? '')
@@ -96,7 +98,7 @@ export async function searchStocks(keyword: string): Promise<StockIdentity[]> {
       const name = String(row.Name ?? '')
       const classify = String(row.Classify ?? '')
       if (!isAShare(secid, code) || !name || seen.has(secid)) continue
-      if (classify && classify !== 'AStock' && classify !== 'NEEQ') continue
+      if (classify && !ASHARE_CLASSIFY.has(classify)) continue
       seen.add(secid)
       result.push({
         code,

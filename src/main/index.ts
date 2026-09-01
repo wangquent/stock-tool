@@ -47,7 +47,7 @@ function createWindow(): void {
 
 function registerIpc(): void {
   ipcMain.handle('search-stocks', async (_event, keyword: string) => {
-    return searchStocks(keyword)
+    return searchStocks(String(keyword ?? ''))
   })
   ipcMain.handle('get-quote', async (_event, secid: string) => {
     return getQuote(secid)
